@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cyber Escape Room</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.terminal/2.35.2/js/jquery.terminal.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.terminal/2.35.2/css/jquery.terminal.min.css" rel="stylesheet"/>
+    <style>
+        body { background-color: black; margin: 0; padding: 0; }
+        .terminal { --size: 1.2; } /* Makes text slightly larger */
+    </style>
+</head>
+<body>
+    <script>
+        let currentUser = "";
+        const apiUrl = "https://YOUR-HOSTINGER-DOMAIN.com/api.php"; // UPDATE THIS
+
+        $('body').terminal(function(command, term) {
+            if (command.trim() === '') return;
+            
+            term.pause(); // Pause terminal while waiting for network
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUser, command: command })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.logged_in_user) {
+                    currentUser = data.logged_in_user;
+                    term.set_prompt(currentUser + '@kali:~$ ');
+                }
+                term.echo(data.output);
+            })
+            .catch(error => {
+                term.echo("[[b;red;]Error communicating with server.]");
+            })
+            .finally(() => {
+                term.resume(); // Resume terminal
+            });
+
+        }, {
+            greetings: "[[b;green;]Welcome to the Network Attack Simulator]\nType 'login <your_name>' to begin or resume your session.\n",
+            prompt: 'guest@kali:~$ '
+        });
+    </script>
+</body>
+</html>
